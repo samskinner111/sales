@@ -27,4 +27,8 @@ In terminal, run:
 
 psql < db/rebuild_development.sql
 
+### Database Import ###
 
+To import the csv database, place the datafile in a folder "data_files" inside "db".  Then run the following rake task.  (Note this assumes the csv file has been cleaned up, with header names as indicated and with latitude and longitude already separated as columns.)
+
+rake db:seed:import_mtrs
