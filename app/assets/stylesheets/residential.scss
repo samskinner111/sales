@@ -10,3 +10,24 @@
 .arc path {
   stroke: #fff;
 }
+
+// Bar Chart
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: steelblue;
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.x.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
