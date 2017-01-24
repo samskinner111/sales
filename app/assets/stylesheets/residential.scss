@@ -2,7 +2,8 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
-.arc text {
+// Pie Chart //
+body, .arc text {
   font: 10px sans-serif;
   text-anchor: middle;
 }
@@ -11,7 +12,14 @@
   stroke: #fff;
 }
 
-// Bar Chart
+g.arc {
+  &:hover {
+    opacity: .55;
+  }
+}
+
+
+// Bar Chart //
 .axis path,
 .axis line {
   fill: none;
@@ -30,4 +38,17 @@
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
+}
+
+
+// Scatter Plot //
+.dot {
+  stroke: #000;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
 }
