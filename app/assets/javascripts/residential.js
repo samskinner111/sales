@@ -101,13 +101,12 @@ function makeBar() {
         .style("text-anchor", "start")
         .attr("transform", "rotate(90)");
 
-    svg.append("g") 
+    svg.append("g")   // add -axis label
       .append("text")
         .attr("x", width)
         .attr("y", 480)
         .style("text-anchor", "end")
         .text("Zip Codes");
-
 
     svg.append("g")
         .attr("class", "y axis")
@@ -200,7 +199,7 @@ function makeScatter() {
       .append("text")
         .attr("class", "label")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -63)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Median Value");
