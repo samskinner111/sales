@@ -66,7 +66,7 @@ function makePie() {
 
 function makeBar() {
   // From: http://bl.ocks.org/mbostock/5977197
-  var margin = {top: 20, right: 20, bottom: 50, left: 50},
+  var margin = {top: 20, right: 20, bottom: 50, left: 100},
       width  = 960 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
 
@@ -101,12 +101,20 @@ function makeBar() {
         .style("text-anchor", "start")
         .attr("transform", "rotate(90)");
 
+    svg.append("g") 
+      .append("text")
+        .attr("x", width)
+        .attr("y", 480)
+        .style("text-anchor", "end")
+        .text("Zip Codes");
+
+
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
       .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -60)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Median Value");
@@ -115,7 +123,7 @@ function makeBar() {
         .data(data)
       .enter().append("rect")
         .attr("class", "bar")
-       .style("fill", "blue")
+       .style("fill", "red")
         .attr("x", xMap)
         .attr("width", xScale.rangeBand)
         .attr("y", yMap)
@@ -145,7 +153,7 @@ function makeScatter() {
       xAxis  = d3.svg.axis().scale(xScale).orient("bottom");
 
   // setup y
-  var yValue = function(d) { return +d.pmt;},    // data -> value
+  var yValue = function(d) { return +d.median_value;},    // data -> value
       yScale = d3.scale.linear().range([height, 0]),     // value -> display
       yMap   = function(d) { return yScale(yValue(d));}, // data -> display
       yAxis  = d3.svg.axis().scale(yScale).orient("left");
@@ -261,3 +269,108 @@ function makeScatter() {
   });
 }
 
+// Returns a function to compute the interquartile range.
+function iqr(k) {
+  return function(d, i) {
+    var q1 = d.quartiles[0],
+        q3 = d.quartiles[2],
+        iqr = (q3 - q1) * k,
+        i = -1,
+        j = d.length;
+    while (d[++i] < q1 - iqr);
+    while (d[--j] > q3 + iqr);
+    return [i, j];
+  };
+}
+
+function makeBoxPlot() {
+  // From: http://bl.ocks.org/mbostock/4061502
+  // From: http://bl.ocks.org/jensgrubert/7789216
+  var margin = {top: 30, right: 50, bottom: 95, left: 50},
+      width  = 900 - margin.left - margin.right;
+      height = 450 - margin.top - margin.bottom,
+      min    = Infinity,
+      max    = -Infinity,
+      labels = false; // show the text labels beside individual boxplots?
+
+  $.getJSON('/residential/scatter_data', function(d) {
+    // map-reduce (transform) the data!
+    // Create arrays of median values for each jurisdiction
+    data = d.scatter_data.reduce(function(accum, obj) {
+      indices = accum.map(function(arr) { return arr[0]; });
+      idx = indices.indexOf(obj.jurisdiction);
+      value = +obj.median_value;
+      if (idx > -1) {
+        accum[idx][1].push(value);
+      } else {
+        accum.push([obj.jurisdiction, [value]]);
+      }
+      if (value > max) { max = value; }
+      if (value < min) { min = value; }
+      return accum;
+    }, []);
+console.log('I am pre box')
+    var chart = d3.box()
+      .whiskers(iqr(1.5))
+      .height(height)
+      .domain([min, max])
+      .showLabels(labels);
+console.log('I am post-box')
+    var svg = d3.select("#plot").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .attr("class", "box")
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // the x-axis
+    var x = d3.scale.ordinal()
+      .domain( data.map(function(d) { return d[0] } ) )
+      .rangeRoundBands([0 , width], 0.7, 0.3);
+
+    var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+    // the y-axis
+    var y = d3.scale.linear()
+      .domain([min, max])
+      .range([height + margin.top, 0 + margin.top]);
+
+    var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+    // draw the boxplots
+    svg.selectAll(".box")
+        .data(data)
+      .enter().append("g")
+      .attr("transform", function(d) { return "translate(" +  x(d[0])  + "," + margin.top + ")"; } )
+        .call(chart.width(x.rangeBand()));
+
+    // add a title
+    svg.append("text")
+       .attr("x", (width / 2))
+       .attr("y", 0 + (margin.top / 2))
+       .attr("text-anchor", "middle")
+       .style("font-size", "18px")
+       //.style("text-decoration", "underline")
+       .text("Median Home Sale Value By Jurisdiction");
+
+    // draw y axis
+    svg.append("g")
+       .attr("class", "y axis")
+       .call(yAxis);
+
+    // draw x axis
+    svg.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + (height  + margin.top) + ")")
+       .call(xAxis)
+     .selectAll("text")
+       .attr("x", -5)
+       .attr("y", 5)
+       .style("text-anchor", "end")
+       .attr("transform", "rotate(-45)");
+  });
+}

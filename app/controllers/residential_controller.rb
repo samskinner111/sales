@@ -17,6 +17,7 @@ class ResidentialController < ApplicationController
   end
 
   def scatter_plot; end
+  def box_plot; end
 
   def scatter_data
     data = SalesFigure.
@@ -24,4 +25,6 @@ class ResidentialController < ApplicationController
       order(:jurisdiction)
     render :json => {scatter_data: data}
   end
+
+ 
 end
